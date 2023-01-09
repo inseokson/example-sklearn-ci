@@ -8,8 +8,8 @@ on:
 env:
   MODULE: main.py
   SHA: ${{ github.sha }}
-  REGISTRY_HOSTNAME: ${{ secrets.GCP_LOCATION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_IMAGE_REPOSITORY }}
-  IMAGE_NAME: test
+  HOST_ARTIFACT_REGISTRY: ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_ARTIFACT_REGISTRY }}
+  IMAGE_NAME: ${{ github.event.pull_request.base.repo.name }}
 
 jobs:
   build:
@@ -47,12 +47,12 @@ jobs:
         uses: google-github-actions/setup-gcloud@v1
       - name: Configure docker
         run: |
-          gcloud auth configure-docker ${{ secrets.GCP_LOCATION }}-docker.pkg.dev
+          gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
       - name: Build image
         run: |
-          docker build -t "$REGISTRY_HOSTNAME/$IMAGE_NAME:${{ env.SHA }}" .
+          docker build -t "$HOST_ARTIFACT_REGISTRY/$IMAGE_NAME:$SHA" .
       - name: Push image
         run: |
-          docker push "$REGISTRY_HOSTNAME/$IMAGE_NAME:${{ env.SHA }}"
-          docker tag $REGISTRY_HOSTNAME/$IMAGE_NAME:${{ env.SHA }} $REGISTRY_HOSTNAME/$IMAGE_NAME:latest
-          docker push $REGISTRY_HOSTNAME/$IMAGE_NAME:latest
+          docker push $HOST_ARTIFACT_REGISTRY/$IMAGE_NAME:$SHA
+          docker tag $HOST_ARTIFACT_REGISTRY/$IMAGE_NAME:$SHA $HOST_ARTIFACT_REGISTRY/$IMAGE_NAME:latest
+          docker push $HOST_ARTIFACT_REGISTRY/$IMAGE_NAME:latest
