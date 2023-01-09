@@ -1,0 +1,52 @@
+name: continuous-integration
+
+on:
+  pull_request:
+    branches:
+      - main
+
+env:
+  MODULE: main.py
+  SHA: ${{ github.sha }}
+  HOST_ARTIFACT_REGISTRY: ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_ARTIFACT_REGISTRY }}
+  IMAGE_NAME: ${{ github.event.pull_request.base.repo.name }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9.12
+          cache: pip
+      - name: Install python packages for CI
+        run: |
+          python -m pip install --upgrade pip wheel setuptools
+          python -m pip install -r requirements/lint.txt
+      - name: Check code styles
+        run: |
+          black --check --diff ${{ env.MODULE }}
+          isort --check --diff ${{ env.MODULE }}
+          flake8 ${{ env.MODULE }}
+      - name: Test with pytest
+        run: pytest
+      - id: auth
+        name: GCP Authentication
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+      - name: Set up GCP Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+      - name: Configure docker
+        run: gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
+      - name: Build image
+        run: docker build -t "$HOST_ARTIFACT_REGISTRY/$IMAGE_NAME:$SHA" .
+      - name: Push image
+        run: docker push $HOST_ARTIFACT_REGISTRY/$IMAGE_NAME:$SHA
