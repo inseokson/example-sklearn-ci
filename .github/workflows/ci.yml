@@ -7,7 +7,7 @@ on:
 
 env:
   MODULE: main.py
-  SHA: ${{ github.sha }}
+  SHA: ${{ github.event.pull_request.head.sha }}
   REGISTRY_HOSTNAME: ${{ secrets.GCP_LOCATION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_IMAGE_REPOSITORY }}
   IMAGE_NAME: test
 
@@ -50,9 +50,9 @@ jobs:
           gcloud auth configure-docker ${{ secrets.GCP_LOCATION }}-docker.pkg.dev
       - name: Build image
         run: |
-          docker build -t "$REGISTRY_HOSTNAME/$IMAGE_NAME:${{ github.sha }}" .
+          docker build -t "$REGISTRY_HOSTNAME/$IMAGE_NAME:${{ env.sha }}" .
       - name: Push image
         run: |
-          docker push $REGISTRY_HOSTNAME/$IMAGE_NAME:${{ env.sha }}
-          docker tag $REGISTRY_HOSTNAME/$IMAGE_NAME:${{ env.sha }} $REGISTRY_HOSTNAME/$IMAGE_NAME:latest
-          docker push $REGISTRY_HOSTNAME/$IMAGE_NAME:latest
+          docker push "$REGISTRY_HOSTNAME/$IMAGE_NAME:${{ env.sha }}"
+          # docker tag $REGISTRY_HOSTNAME/$IMAGE_NAME:${{ env.sha }} $REGISTRY_HOSTNAME/$IMAGE_NAME:latest
+          # docker push $REGISTRY_HOSTNAME/$IMAGE_NAME:latest
