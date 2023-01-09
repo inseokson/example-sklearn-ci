@@ -47,12 +47,12 @@ jobs:
         uses: google-github-actions/setup-gcloud@v1
       - name: Configure docker
         run: |
-          gcloud auth configure-docker ${{ secrets.GCP_LOCATION }}-docker.pkg.dev
+          gcloud auth configure-docker {{ secrets.GCP_LOCATION }}-docker.pkg.dev
       - name: Build image
         run: |
-          docker build -t "$REGISTRY_HOSTNAME/$IMAGE_NAME:${{ env.sha }}" .
+          docker build -t "$REGISTRY_HOSTNAME/$IMAGE_NAME:${{ env.SHA }}" .
       - name: Push image
         run: |
-          docker push "$REGISTRY_HOSTNAME/$IMAGE_NAME:${{ env.sha }}"
-          # docker tag $REGISTRY_HOSTNAME/$IMAGE_NAME:${{ env.sha }} $REGISTRY_HOSTNAME/$IMAGE_NAME:latest
-          # docker push $REGISTRY_HOSTNAME/$IMAGE_NAME:latest
+          docker push "$REGISTRY_HOSTNAME/$IMAGE_NAME:${{ env.SHA }}"
+          docker tag $REGISTRY_HOSTNAME/$IMAGE_NAME:${{ env.SHA }} $REGISTRY_HOSTNAME/$IMAGE_NAME:latest
+          docker push $REGISTRY_HOSTNAME/$IMAGE_NAME:latest
