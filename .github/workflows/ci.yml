@@ -23,8 +23,8 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9.12"
-          cache: "pip"
+          python-version: 3.9.12
+          cache: pip
       - name: Install libraries
         run: |
           python -m pip install --upgrade pip wheel setuptools
@@ -47,7 +47,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v1
       - name: Configure docker
         run: |
-          gcloud auth configure-docker {{ secrets.GCP_LOCATION }}-docker.pkg.dev
+          gcloud auth configure-docker ${{ secrets.GCP_LOCATION }}-docker.pkg.dev
       - name: Build image
         run: |
           docker build -t $REGISTRY_HOSTNAME/$IMAGE_NAME:${{ env.sha }} .
