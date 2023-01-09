@@ -7,7 +7,7 @@ on:
 
 env:
   MODULE: main.py
-  SHA: ${{ github.event.pull_request.head.sha }}
+  SHA: ${{ github.sha }}
   REGISTRY_HOSTNAME: ${{ secrets.GCP_LOCATION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_IMAGE_REPOSITORY }}
   IMAGE_NAME: test
 
