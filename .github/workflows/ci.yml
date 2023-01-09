@@ -50,7 +50,7 @@ jobs:
           gcloud auth configure-docker ${{ secrets.GCP_LOCATION }}-docker.pkg.dev
       - name: Build image
         run: |
-          docker build -t $REGISTRY_HOSTNAME/$IMAGE_NAME:${{ env.sha }} .
+          docker build -t "$REGISTRY_HOSTNAME/$IMAGE_NAME:${{ github.sha }}" .
       - name: Push image
         run: |
           docker push $REGISTRY_HOSTNAME/$IMAGE_NAME:${{ env.sha }}
