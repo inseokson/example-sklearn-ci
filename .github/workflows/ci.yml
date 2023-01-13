@@ -14,7 +14,7 @@ on:
 env:
   MODULE: main.py
   SHA: ${{ github.event.pull_request.head.sha }}
-  HOST_ARTIFACT_REGISTRY: |
+  HOST_ARTIFACT_REGISTRY: |-
     ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_ARTIFACT_REGISTRY }}
   IMAGE_NAME: ${{ github.event.pull_request.base.repo.name }}
 
@@ -40,6 +40,7 @@ jobs:
       - name: Test with pytest
         run: pytest
   build:
+    needs: lint-test
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -56,6 +57,6 @@ jobs:
       - name: Configure docker
         run: gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
       - name: Build image
-        run: docker build -t "$HOST_ARTIFACT_REGISTRY/$IMAGE_NAME:$SHA" .
+        run: docker build -t $HOST_ARTIFACT_REGISTRY/$IMAGE_NAME:$SHA .
       - name: Push image
         run: docker push $HOST_ARTIFACT_REGISTRY/$IMAGE_NAME:$SHA
