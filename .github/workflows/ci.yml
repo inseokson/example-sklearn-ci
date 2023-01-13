@@ -2,21 +2,25 @@ name: continuous-integration
 
 on:
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
     branches:
       - main
+    # paths:
+    #   - main.py
 
 env:
   MODULE: main.py
-  SHA: ${{ github.sha }}
-  HOST_ARTIFACT_REGISTRY: ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_ARTIFACT_REGISTRY }}
+  SHA: ${{ github.event.pull_request.head.sha }}
+  HOST_ARTIFACT_REGISTRY: |
+    ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_ARTIFACT_REGISTRY }}
   IMAGE_NAME: ${{ github.event.pull_request.base.repo.name }}
 
 jobs:
-  build:
+  lint-test:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -35,6 +39,12 @@ jobs:
           flake8 ${{ env.MODULE }}
       - name: Test with pytest
         run: pytest
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
       - id: auth
         name: GCP Authentication
         uses: google-github-actions/auth@v1
